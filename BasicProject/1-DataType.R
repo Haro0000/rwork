@@ -213,3 +213,17 @@ csvemp2
 
 csvemp3 <- read.csv("emp.csv", col.name=c("사번", "이름", "급여"))
 csvemp3
+
+csvemp4 <- read.csv("emp2.csv", header=F, col.name=c("사번", "이름", "급여"))
+csvemp4
+
+aws <- read.delim("AWS_sample.txt", sep="#")
+aws
+View(aws)
+
+
+
+
+
+
+

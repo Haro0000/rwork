@@ -52,8 +52,14 @@ I. 데이터 타입(데이터 구조)
   (3) 컬럼단위로 서로 다른 데이터타입 사용 가능
   (4) data.frame(), read.csv(), read.delim(), read.table(), ...
   
+5. Array
+  (1) 행, 열, 면의 3차원 배열 형태의 객체 생성
+  (2) array()
   
-
+6. List
+  (1) key와 value 한쌍
+  (2) python의 dict와 유사
+  (3) list()
 
 
 

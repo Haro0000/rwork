@@ -221,6 +221,148 @@ aws <- read.delim("AWS_sample.txt", sep="#")
 aws
 View(aws)
 
+# 접근
+aws[1, 1]
+
+x1 <- aws[1:3, 2:4]
+x1
+
+x2 <- aws[9:11, 2:4]
+x2
+
+class(cbind(x1, x2))
+class(rbind(x1, x2))
+
+aws[, 1]
+aws$AWS_ID
+
+class(aws$AWS_ID)
+
+# 구조 확인
+str(aws)
+
+# 기본 통계량
+summary(aws)
+
+# apply()
+df <- data.frame(x=c(1:5), y=seq(2, 10, 2), z=c("a", "b", "c", "d", "e"))
+df
+
+apply(df[,c(1, 2)], 1, sum)
+apply(df[,c(1, 2)], 2, sum)
+
+# 데이터의 일부 추출
+x1 <- subset(df, x >= 3)
+x1
+
+x2 <- subset(df, x>=2 & y<=6)
+x2
+
+# 병합
+height <- data.frame(id=c(1, 2), h=c(180, 175))
+weight <- data.frame(id=c(1, 2), w=c(80, 75))
+
+user <- merge(height, weight, by.x="id", by.y="id")
+user
+
+
+
+
+#### array ####
+
+v <- c(1:12)
+v
+
+arr <- array(v, c(4, 2, 3))
+arr
+
+# 접근
+arr[, , 1]
+arr[, , 2]
+
+# 6이라는 값 추출
+arr[2, 2, 1]
+arr[,,1][2, 2]
+
+
+
+#### list ####
+
+x1 <- 1
+x2 <- data.frame(var1=c(1, 2, 3), var2=c('a', 'b', 'c'))
+x3 <- matrix(c(1:12), ncol=2)
+x4 <- array(1:20, dim=c(2, 5, 2))
+
+x5 <- list(c1=x1, c2=x2, c3=x3, c4=x4)
+x5
+
+x5$c1
+x5$c2
+
+list1 <- list(c("lee", "kim"), "이순신", 95)
+list1
+
+# lee와 kim을 추출
+list1[[1]]
+
+# lee만 추출
+list1[[1]][1]
+
+# kim만 추출
+list1[[1]][2]
+
+list1 <- list("lee", "이순신", 95)
+list1
+
+un <- unlist(list1)
+un
+class(un)
+
+# apply() : lapply(), sapply()
+# lapply() : lapply()는 3차원 이상의 데이터를 입력 받는다.
+#            - 반환형이 list형
+# sapply() : 반환형이 vector 또는 matrix(lapply의 wrapper)
+
+a <- list(c(1:5))
+a
+b <- list(c(6:10))
+b
+
+c <- c(a, b)
+c
+
+x <- lapply(c, max)
+x
+x1 <- unlist(x)
+x1
+
+y <- sapply(c, max)
+y
+
+
+
+
+
+#### 날짜 데이터 타입 ####
+Sys.Date()
+Sys.time()
+
+a <- '21/10/12'
+a
+class(a)
+
+b <- as.Date(a)
+b
+class(b)
+
+c <- as.Date(a, "%y/%m/%d")
+c
+
+
+
+
+
+
 
 
 

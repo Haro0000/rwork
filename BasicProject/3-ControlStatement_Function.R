@@ -143,15 +143,33 @@ test3("3", "홍길동", 30)
 
 
 
+#### 문자열 함수 ####
 
+### 정규 표현식(Regular Expression)
+install.packages("stringr")
+library(stringr)
 
+str1 <- "홍길동32이순신45임꺽정35이괄30신사임당27"
+str_extract(str1, "\\d{2}")
+str_extract_all(str1, "\\d{2}")
+class(str_extract_all(str1, "\\d{2}"))
+unlist(str_extract_all(str1, "\\d{2}"))
+str_extract_all(str1, "[가-힣]+")
 
+str2 <- "hongkd105leess1002you25TOM400강감찬2005"
+str_extract_all(str2, "\\D+")
+str_extract_all(str2,"[a-zA-Z가-힣]+")
 
+length(str2)
+str_length(str2)
 
+str_locate(str2, "강감찬")
 
+str2 <- str_c(str2, "유비55")
+str2
 
-
-
+str3 <- "hongkd105,leess1002,you25,TOM400,강감찬2005"
+str_split(str3, ",")
 
 
 

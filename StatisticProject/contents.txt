@@ -1,0 +1,54 @@
+*. 통계 분석 방법
+=========================
+1. 평균 차이 검정
+  - 집단간의 평균 차이 검정
+  - 척도 : 명목변수 -> 연속변수
+  
+  (1) t-test(student t-test) : 비교 대상이 2개 까지인 경우
+    - 조건
+      +. 결과값이 연속변수
+        아닐 경우 : Mann-Whitney U test, Wilcoxen rank sum test,
+                    Mann-Whitney Wilcoxen test, MWW
+      +. 정규 분포 여부
+        아닐 경우 : MWW
+      +. 등분산 여부
+        아닐 경우 : Welch's t-test
+        
+      + 모수적인 통계방식과 비모수적인 통계방식
+        A 20  21  21  22 124
+        B 40  41  42  43 42
+        
+        A   A   A   A   B   B  B   B   B   A
+        20  21  21  22  40  41 42  43  42  124
+      
+    
+    1) 하나의 집단으로 검정 : one sample t-test
+    2) 두개의 집단으로 검정 : independent two sample t-test
+    3) 시간에 차이(하나의 집단, 쌍체, 대응) : paired sample t-test
+    
+  
+  (2) anova : 비교 대상이 3개 이상인 경우
+    1) 집단이 3개 이상일 때 : one way anova, 일원 배치 분산분석
+      - independent two sample t-test의 확장
+    2) 시간에 따른 차이 검정 : (one way) repeated measured anova
+      - paired sample t-test의 확장
+    3) 요인에 따른 차이 검정 : two way anova   
+    4) 시간 + 요인에 따른 차이 검정 : two way repeated measured anova
+    
+    *. 사후 검정 : Tukey, DUNcan, Bonferroni, Fisher's LSD, ...
+    *. 조건
+      - 결과값이 연속변수
+        아닐 경우 : Kruskal-wallis H test
+        
+      - 정규 분포 여부
+        아닐 경우 : Kruskal-wallis H test
+        
+      - 등분산 여부
+        아닐 경우 : welch's anova
+    
+    
+    
+    
+    
+
+2. 관계 검정

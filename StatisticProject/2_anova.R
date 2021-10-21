@@ -198,15 +198,21 @@ str(telco)
 
 table(telco$Contract)
 
+model2 <- aov(TotalCharges ~ PaymentMethod + Contract + PaymentMethod*Contract, data=telco)
+model2
+summary(model2)
+
+result = TukeyHSD(model2)
+result
+
+plot(result)
+
+ggplot(data=telco, aes(PaymentMethod, TotalCharges, col=Contract)) +
+  geom_boxplot()
 
 
 
-
-
-
-
-
-#### 사례4 : RM anova ####
+#### 사례3 : RM anova ####
 # 구형성(Sphericity) : 이미 독립성이 깨졌으므로 최대한 독립성과 무작위성을 확보하기 위한 조건
 # 가정 : 반복 측정된 자료들의 시차에 따른 분산이 동일
 #     1) Mouchly의 단위행렬 검정 : p-value값이 0.05보다 커야 함.
@@ -274,41 +280,250 @@ means
 plot(means, type="o", lty=2, col=2)
 
 
+multimodel <- lm(cbind(rm$score0, rm$score1, rm$score3, rm$score6) ~ 1)
+multimodel
+
+fact <- factor(c("score0", "score1", "score3","score6"), ordered = F)
+
+library(car)
+model1 <- Anova(multimodel, idata=data.frame(fact), idesign=~fact, type="III")
+summary(model1, multivariate=F)
+
+# 사후 검정
+library(tidyr)
+
+rmlong <- gather(rm, key="ID", value="score")
+rmlong
+
+rmlong <- rmlong[8:35, ]
+rmlong
+
+with(rmlong, pairwise.t.test(score, ID, paired = T, p.adjust.method = "bonferroni"))
+
+# 또 다른 방법
+out <- aov(score ~ ID, data=rmlong)
+shapiro.test(resid(out))
+
+TukeyHSD(out)
+0.05/4
+
+
+#### 실습2 : 비모수일경우(즉, 서열변수이거나 정규분포가 아닐경우) ####
+?friedman.test
+
+RoundingTimes <-
+  matrix(c(5.40, 5.50, 5.55,
+           5.85, 5.70, 5.75,
+           5.20, 5.60, 5.50,
+           5.55, 5.50, 5.40,
+           5.90, 5.85, 5.70,
+           5.45, 5.55, 5.60,
+           5.40, 5.40, 5.35,
+           5.45, 5.50, 5.35,
+           5.25, 5.15, 5.00,
+           5.85, 5.80, 5.70,
+           5.25, 5.20, 5.10,
+           5.65, 5.55, 5.45,
+           5.60, 5.35, 5.45,
+           5.05, 5.00, 4.95,
+           5.50, 5.50, 5.40,
+           5.45, 5.55, 5.50,
+           5.55, 5.55, 5.35,
+           5.45, 5.50, 5.55,
+           5.50, 5.45, 5.25,
+           5.65, 5.60, 5.40,
+           5.70, 5.65, 5.55,
+           6.30, 6.30, 6.25),
+         nrow = 22,
+         byrow = TRUE,
+         dimnames = list(1 : 22,
+                         c("Round Out", "Narrow Angle", "Wide Angle")))
+
+RoundingTimes
+
+library(reshape2)
+rt <- melt(RoundingTimes)
+rt
+
+out <- aov(value ~ Var2, data=rt)
+shapiro.test(resid(out))
+
+boxplot(value ~ Var2, data=rt)
+
+friedman.test(RoundingTimes)
+
+# 사후 검정
+friedman.test.with.post.hoc <- function(formu, data, to.print.friedman = T, to.post.hoc.if.signif = T,  to.plot.parallel = T, to.plot.boxplot = T, signif.P = .05, color.blocks.in.cor.plot = T, jitter.Y.in.cor.plot =F)
+{
+  # formu is a formula of the shape:     Y ~ X | block
+  # data is a long data.frame with three columns:    [[ Y (numeric), X (factor), block (factor) ]]
+  # Note: This function doesn't handle NA's! In case of NA in Y in one of the blocks, then that entire block should be removed.
+  # Loading needed packages
+  if(!require(coin))
+  {
+    print("You are missing the package 'coin', we will now try to install it...")
+    install.packages("coin")
+    library(coin)
+  }
+  if(!require(multcomp))
+  {
+    print("You are missing the package 'multcomp', we will now try to install it...")
+    install.packages("multcomp")
+    library(multcomp)
+  }
+  if(!require(colorspace))
+  {
+    print("You are missing the package 'colorspace', we will now try to install it...")
+    install.packages("colorspace")
+    library(colorspace)
+  }
+  # get the names out of the formula
+  formu.names <- all.vars(formu)
+  Y.name <- formu.names[1]
+  X.name <- formu.names[2]
+  block.name <- formu.names[3]
+  if(dim(data)[2] >3) data <- data[,c(Y.name,X.name,block.name)]    # In case we have a "data" data frame with more then the three columns we need. This code will clean it from them...
+  # Note: the function doesn't handle NA's. In case of NA in one of the block T outcomes, that entire block should be removed.
+  # stopping in case there is NA in the Y vector
+  if(sum(is.na(data[,Y.name])) > 0) stop("Function stopped: This function doesn't handle NA's. In case of NA in Y in one of the blocks, then that entire block should be removed.")
+  # make sure that the number of factors goes with the actual values present in the data:
+  data[,X.name ] <- factor(data[,X.name ])
+  data[,block.name ] <- factor(data[,block.name ])
+  number.of.X.levels <- length(levels(data[,X.name ]))
+  if(number.of.X.levels == 2) { warning(paste("'",X.name,"'", "has only two levels. Consider using paired wilcox.test instead of friedman test"))}
+  # making the object that will hold the friedman test and the other.
+  the.sym.test <- symmetry_test(formu, data = data,    ### all pairwise comparisons
+                                teststat = "max",
+                                xtrafo = function(Y.data) { trafo( Y.data, factor_trafo = function(x) { model.matrix(~ x - 1) %*% t(contrMat(table(x), "Tukey")) } ) },
+                                ytrafo = function(Y.data){ trafo(Y.data, numeric_trafo = rank, block = data[,block.name] ) }
+  )
+  # if(to.print.friedman) { print(the.sym.test) }
+  if(to.post.hoc.if.signif)
+  {
+    if(pvalue(the.sym.test) < signif.P)
+    {
+      # the post hoc test
+      The.post.hoc.P.values <- pvalue(the.sym.test, method = "single-step")    # this is the post hoc of the friedman test
+      # plotting
+      if(to.plot.parallel & to.plot.boxplot)    par(mfrow = c(1,2)) # if we are plotting two plots, let's make sure we'll be able to see both
+      if(to.plot.parallel)
+      {
+        X.names <- levels(data[, X.name])
+        X.for.plot <- seq_along(X.names)
+        plot.xlim <- c(.7 , length(X.for.plot)+.3)    # adding some spacing from both sides of the plot
+        if(color.blocks.in.cor.plot)
+        {
+          blocks.col <- rainbow_hcl(length(levels(data[,block.name])))
+        } else {
+          blocks.col <- 1 # black
+        }
+        data2 <- data
+        if(jitter.Y.in.cor.plot) {
+          data2[,Y.name] <- jitter(data2[,Y.name])
+          par.cor.plot.text <- "Parallel coordinates plot (with Jitter)"
+        } else {
+          par.cor.plot.text <- "Parallel coordinates plot"
+        }
+        # adding a Parallel coordinates plot
+        matplot(as.matrix(reshape(data2,  idvar=X.name, timevar=block.name,
+                                  direction="wide")[,-1])  ,
+                type = "l",  lty = 1, axes = FALSE, ylab = Y.name,
+                xlim = plot.xlim,
+                col = blocks.col,
+                main = par.cor.plot.text)
+        axis(1, at = X.for.plot , labels = X.names) # plot X axis
+        axis(2) # plot Y axis
+        points(tapply(data[,Y.name], data[,X.name], median) ~ X.for.plot, col = "red",pch = 4, cex = 2, lwd = 5)
+      }
+      if(to.plot.boxplot)
+      {
+        # first we create a function to create a new Y, by substracting different combinations of X levels from each other.
+        subtract.a.from.b <- function(a.b , the.data)
+        {
+          the.data[,a.b[2]] - the.data[,a.b[1]]
+        }
+        temp.wide <- reshape(data,  idvar=X.name, timevar=block.name,
+                             direction="wide")     #[,-1]
+        wide.data <- as.matrix(t(temp.wide[,-1]))
+        colnames(wide.data) <- temp.wide[,1]
+        Y.b.minus.a.combos <- apply(with(data,combn(levels(data[,X.name]), 2)), 2, subtract.a.from.b, the.data =wide.data)
+        names.b.minus.a.combos <- apply(with(data,combn(levels(data[,X.name]), 2)), 2, function(a.b) {paste(a.b[2],a.b[1],sep=" - ")})
+        the.ylim <- range(Y.b.minus.a.combos)
+        the.ylim[2] <- the.ylim[2] + max(sd(Y.b.minus.a.combos))    # adding some space for the labels
+        is.signif.color <- ifelse(The.post.hoc.P.values < .05 , "green", "grey")
+        boxplot(Y.b.minus.a.combos,
+                names = names.b.minus.a.combos ,
+                col = is.signif.color,
+                main = "Boxplots (of the differences)",
+                ylim = the.ylim
+        )
+        legend("topright", legend = paste(names.b.minus.a.combos, rep(" ; PostHoc P.value:", number.of.X.levels),round(The.post.hoc.P.values,5)) , fill =  is.signif.color )
+        abline(h = 0, col = "blue")
+      }
+      list.to.return <- list(Friedman.Test = the.sym.test, PostHoc.Test = The.post.hoc.P.values)
+      if(to.print.friedman) {print(list.to.return)}
+      return(list.to.return)
+    }    else {
+      print("The results where not significant, There is no need for a post hoc test")
+      return(the.sym.test)
+    }
+  }
+  # Original credit (for linking online, to the package that performs the post hoc test) goes to "David Winsemius", see:
+  # http://tolstoy.newcastle.edu.au/R/e8/help/09/10/1416.html
+}
+
+
+friedman.test.with.post.hoc(value ~ Var2 | Var1, rt)
+
+# 본페르니 보정
+0.05 / 3
 
 
 
 
 
 
+#### 사례4 : Two Way RM anova ####
+
+df <- read.csv("../data/10_rmanova.csv", header=T)
+str(df)
+df
+
+# long형으로 변경
+df1 <- melt(df, id=c("group", "id"), variable.name = "time", value.name = "month")
+df1
+
+# 그래프 그리기
+?interaction.plot
+str(df1)
+
+df1$group <- factor(df1$group)
+df1$id <- factor(df1$id)
+str(df1)
+
+interaction.plot(df1$time, df1$group, df1$month)
 
 
+out <- aov(month ~ group*time, data=df1)
+summary(out)
 
+shapiro.test(resid(out))
 
+# 사후 검정
+df1
 
+df_0 <- df1[df1$time == "month0", ]
+df_1 <- df1[df1$time == "month1", ]
+df_3 <- df1[df1$time == "month3", ]
+df_6 <- df1[df1$time == "month6", ]
 
+t.test(month ~ group, data=df_0)
+t.test(month ~ group, data=df_1)
+t.test(month ~ group, data=df_3)
+t.test(month ~ group, data=df_6)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# 4C2
+0.05/6 # 0.008
 
 
 

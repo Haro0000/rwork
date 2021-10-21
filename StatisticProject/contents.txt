@@ -25,6 +25,7 @@
     1) 하나의 집단으로 검정 : one sample t-test
     2) 두개의 집단으로 검정 : independent two sample t-test
     3) 시간에 차이(하나의 집단, 쌍체, 대응) : paired sample t-test
+        비모수일 경우 MWW
     
   
   (2) anova : 비교 대상이 3개 이상인 경우
@@ -32,6 +33,7 @@
       - independent two sample t-test의 확장
     2) 시간에 따른 차이 검정 : (one way) repeated measured anova
       - paired sample t-test의 확장
+      - 비모수일 경우 Friedman test
     3) 요인에 따른 차이 검정 : two way anova   
     4) 시간 + 요인에 따른 차이 검정 : two way repeated measured anova
     
@@ -52,3 +54,21 @@
     
 
 2. 관계 검정
+  - 변수와 변수의 관계를 검정
+  - 척도 : 연속변수 -> 연속변수 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

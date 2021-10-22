@@ -71,6 +71,8 @@ library(hexbin)
 
 plot(hexbin(Ox$lu, Ox$sz, xbins=50))
 
+smoothScatter(Ox$lu, Ox$sz)
 
-
-
+install.packages("IDPmisc")
+library(IDPmisc)
+iplot(Ox$lu, Ox$sz)

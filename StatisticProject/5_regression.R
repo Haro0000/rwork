@@ -178,14 +178,19 @@ library(car)
 
 vif(reg2_1)
 
+x <- cbind(floors, sqft_above, sqft_basement)
+cor(x)
 
 
+x <- cbind(floors, bedrooms)
+cor(x)
 
+reg3 <- lm(price ~ floors + bedrooms, data=house)
+summary(reg3)
 
+vif(reg3)
 
-
-
-
+detach(house)
 
 
 

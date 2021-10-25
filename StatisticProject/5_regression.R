@@ -120,6 +120,68 @@ plot(house$sqft_living, house$price)
 
 
 
+#### 2. 다중 회귀 분석 ####
+# y = a1x1 + a2x2 + a3x3 + ... + b
+
+house <- read.csv("../data/kc_house_data.csv", header=T)
+str(house)
+
+# 종속 변수 : price
+# 독립 변수 : sqft_living, floors, waterfront
+
+fit2 <- lm(price ~ sqft_living + floors + waterfront, data=house)
+summary(fit2)
+
+### 표준화 계수 : 변수들의 영향력 확인
+install.packages("lm.beta")
+library(lm.beta)
+
+fit3 <- lm.beta(fit2)
+summary(fit3)
+
+### 변수들간의 상관 관계
+### 다중 공선성
+#     1) 원인 : 독립변수들끼리 너무 많이 겹쳐서 발생하는 문제
+#     2) 확인 방법
+#       - 산포도, 상관계수 : 상관 계수가 0.9를 넘게되면 다중 공선성 문제  
+#       - VIF(Variance Inflation Factor) : 분산팽창지수
+#           일반적으로 10보다 크면 문제가 있다고 판단(연속형 변수)
+#           더미변수일 경우에는 3이상이면 문제가 있다고 판단.
+#           sqrt(vif) > 2
+#     3) 해결 방법
+#       - 유의 여부
+#       - 변수 제거
+#       - 주성분 분석
+#       - 다중공선성이 발생한 독립변수들을 합치기
+#       - ...
+
+
+
+# 독립변수 : sqft_living, bathrooms, sqft_lot, floors
+attach(house)
+x <- cbind(sqft_living, bathrooms, sqft_lot, floors)
+cor(x)
+
+cor(x, price)
+
+reg1 <- lm(price ~ sqft_living, data=house)
+summary(reg1)
+
+reg2 <- lm(price ~ sqft_living + floors, data=house)
+summary(reg2)
+
+reg2_1 <- lm(price ~ sqft_living + floors + sqft_living * floors, data=house)
+summary(reg2_1)
+
+install.packages("car")
+library(car)
+
+vif(reg2_1)
+
+
+
+
+
 
 
 

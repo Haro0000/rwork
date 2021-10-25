@@ -177,6 +177,7 @@ install.packages("car")
 library(car)
 
 vif(reg2_1)
+sqrt(vif(reg2_1))
 
 x <- cbind(floors, sqft_above, sqft_basement)
 cor(x)
@@ -190,7 +191,145 @@ summary(reg3)
 
 vif(reg3)
 
+
+x <- cbind(floors, bedrooms, waterfront)
+cor(x)
+cor(x, price)
+
+reg4 <- lm(price ~ floors + bedrooms + waterfront, data=house)
+summary(reg4)
+
+vif(reg4)
+
+
+reg5 <- lm(price ~ floors + bedrooms + waterfront + bedrooms*waterfront, data=house)
+summary(reg5)
+
+vif(reg5)
+
+
+reg6 <- lm(price ~ floors + bedrooms + waterfront + floors*waterfront, data=house)
+summary(reg6)
+
+vif(reg6)
+
 detach(house)
+
+
+
+#### 실습1 ####
+head(state.x77)
+
+states <- as.data.frame(state.x77[, c("Murder", "Population", "Income", "Illiteracy","Frost")])
+str(states)
+
+fit <- lm(Murder ~ Population + Illiteracy + Income + Frost, data=states)
+summary(fit)
+
+vif(fit)
+sqrt(vif(fit))
+
+
+### 이상 관측치
+# 1) 이상치(outlier) : 표준편차보다 2배이상 크거나 작은 값
+# 2) 큰 지레점(High leverage points) : p(절편을 포함한 인수들의 숫자)/n 의 값이 2~3배 이상되는 관측치 : 5 / 50 = 0.1
+# 3) 영향 관측치(Influential Observation, Cook's D)
+#     독립변수의 수 / (샘플 수 - 예측인자의 수 - 1) 보다 클 경우
+#     4 / (50-4-1) = 0.1
+
+par(mfrow=c(1,1))
+influencePlot(fit, id=list(method="identify"))
+
+
+
+
+
+#### 회귀모델의 교정 ####
+
+fit <- lm(Murder ~ Population + Illiteracy + Income + Frost, data=states)
+summary(fit)
+
+par(mfrow=c(2, 2))
+plot(fit)
+
+shapiro.test(resid(fit))
+
+
+### 정규성을 만족하지 않을 때(결과 변수에 람다승을 해준다.)
+# -2, -1, -0.5, 0, 0.5, 1, 2
+powerTransform(states$Murder)
+summary(powerTransform(states$Murder))
+
+
+### 선형성을 만족하지 않을 때
+boxTidwell(Murder ~ Population + Illiteracy, data=states)
+
+
+### 등분산을 만족하지 않을 때
+ncvTest(fit)
+
+spreadLevelPlot(fit)
+
+
+
+
+
+
+#### 회귀모델의 선택 ####
+# AIC(Akaike's Information Criterion)
+# Backward Stepwise Regression
+#     - 모든 독립변수를 대상으로 하나씩 빼는 방법
+# Forward Stepwise Regression
+#     - 변수를 하나씩 추가하면서 AIC값을 측정
+
+fit1 <- lm(Murder ~ ., data=states)
+summary(fit1)
+
+fit2 <- lm(Murder ~ Population + Illiteracy, data=states)
+summary(fit2)
+
+AIC(fit1, fit2)
+
+### Backward Stepwise Regression
+full.model <- lm(Murder ~ ., data=states)
+reduced.model<- step(full.model, direction = "backward")
+reduced.model
+
+
+### forward Stepwise Regression
+min.model <- lm(Murder ~ 1, data=states)
+fwd.model <- step(min.model, direction = "forward",
+                  scope=(Murder ~ Population + Illiteracy + Income + Frost))
+
+
+### All Subset Regression
+install.packages("leaps")
+library(leaps)
+
+result <- regsubsets(Murder ~ ., data=states, nbest=4)
+result
+par(mfrow=c(1, 1))
+plot(result, scale="adjr2")
+
+
+
+#### 실습 ####
+
+mydata <- read.csv("../data/regression.csv")
+str(mydata)
+# 가장 영향력이 있는 변수들은 무엇인가?
+# 정규성 검증, 등분산성 검증, 다중공선성 검증
+# 독립변수들이 출산율과 관계가 있는가?
+
+
+
+
+
+
+
+
+
+
 
 
 
